@@ -50,8 +50,10 @@ You're good to go!
 ## Bugs
 
 I'm unable to test the "ColorTemperature" code properly as it's not a function that my lights have.
+
+Adding lights has occasionally been flakey. I've tested this code on a group of 7 lights, for which it worked fine, but you'll have to see how you get on. Some of the polling times for the BLE Advertising frames might need adjustment.
+
 ## Contributing
 
 Contributions are always welcome!
-
 
