@@ -12,13 +12,14 @@
 //CONFIGURATION
 //////////////////////////////////////////////////////
 //IP Address of your MQTT Broker (probably your Home Assistant host)
-#define MQTT_BROKER_ADDR IPAddress(192,168,0,1)
+//#define MQTT_BROKER_ADDR IPAddress(192,168,50,10)
 //Your WiFi SSID
-#define WIFI_SSID "YOUR_SSID"
+//#define WIFI_SSID "baargsiitsch.iot"
 //Your Wifi Password
-#define WIFI_PASS "YOUR_WIFI_PASS"
+//#define WIFI_PASS "@riverfern8512@"
 // UUID 1 128-Bit (may use linux tool uuidgen or random numbers via https://www.uuidgenerator.net/)
-#define BEACON_UUID "a1885535-7e56-4c9c-ae19-796ce9864f3f"
+//#define BEACON_UUID "a1885535-7e56-4c9c-ae19-796ce9864f3f" //lib
+//#define BEACON_UUID "d31275a1-5e2c-4624-9fc9-f461bcd8a59b" // basement
 //////////////////////////////////////////////////////
 //END
 //////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ std::vector<LightDevice> myLights;
 #define BUFFER_SIZE 200
 char str_buffer[BUFFER_SIZE];
 BLEScan* pBLEScan;
-const int ledPin = 2;
+const int ledPin = LED_PIN;
 
 bool doesStringMatchBytes(std::string str, const u_int8_t* bytes) {
   bool result = true;
