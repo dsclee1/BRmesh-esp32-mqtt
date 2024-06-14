@@ -8,6 +8,28 @@
 #include <vector>
 #include <cstdio>
 
+#include "FS.h"
+#include "SPIFFS.h"
+/* You only need to format SPIFFS the first time you run a
+   test or else use the SPIFFS plugin to create a partition
+   https://github.com/me-no-dev/arduino-esp32fs-plugin */
+#define FORMAT_SPIFFS_IF_FAILED true
+
+//////////////////////////////////////////////////////
+//CONFIGURATION
+//////////////////////////////////////////////////////
+//IP Address of your MQTT Broker (probably your Home Assistant host)
+#define MQTT_BROKER_ADDR IPAddress(192,168,0,1)
+//Your WiFi SSID
+#define WIFI_SSID "YOUR_SSID"
+//Your Wifi Password
+#define WIFI_PASS "YOUR_WIFI_PASS"
+// UUID 1 128-Bit (may use linux tool uuidgen or random numbers via https://www.uuidgenerator.net/)
+#define BEACON_UUID "a1885535-7e56-4c9c-ae19-796ce9864f3f"
+//////////////////////////////////////////////////////
+//END
+//////////////////////////////////////////////////////
+
 uint8_t my_key[4];
 byte mac[6];
 WiFiClient client;
@@ -38,7 +60,7 @@ std::vector<LightDevice> myLights;
 #define BUFFER_SIZE 200
 char str_buffer[BUFFER_SIZE];
 BLEScan* pBLEScan;
-const int ledPin = LED_PIN;
+const int ledPin = 2;
 
 bool doesStringMatchBytes(std::string str, const u_int8_t* bytes) {
   bool result = true;
@@ -70,6 +92,34 @@ void dump(std::string str)
   {
     Serial.printf("%2.2X", str[i]);
   }
+}
+
+void readFile(fs::FS &fs, const char * path){
+    Serial.printf("Reading file: %s\r\n", path);
+    File file = fs.open(path);
+    if(!file || file.isDirectory()){
+        Serial.println("- failed to open file for reading");
+        return;
+    }
+    Serial.println("- read from file:");
+    while(file.available()){
+        Serial.write(file.read());
+    }
+    file.close();
+}
+void writeFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Writing file: %s\r\n", path);
+    File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("- failed to open file for writing");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("- file written");
+    } else {
+        Serial.println("- write failed");
+    }
+    file.close();
 }
 
 uint8_t package_ble_fastcon_body(int i, int i2, uint8_t sequence, uint8_t safe_key, int forward, const uint8_t* data, int length, const uint8_t* key, uint8_t*& payload)
@@ -590,13 +640,23 @@ void addLights()
   for (int i = 0; i < myLights.size(); i++) {
     addLight(i + 1, myLights[i]);
   }
+  // file ops go here? I think...
+  writeFile(SPIFFS, "/myLights.txt", myLights);
+  //appendFile(SPIFFS, "/hello.txt", "World!\r\n");
+  //readFile(SPIFFS, "/hello.txt");
 }
 
 void setup() {
+
   pinMode (ledPin, OUTPUT);
   // turn on to show we're still in setup (and are adding for lights)
   digitalWrite (ledPin, HIGH);
   Serial.begin(115200);
+  // setup files
+  if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){
+    Serial.println("SPIFFS Mount Failed");
+    return;
+  }
   // create new key
   uint32_t new_key = esp_random();
   my_key[0] = new_key & 0xFF;
@@ -639,3 +699,4 @@ void loop()
 {
   mqtt->loop();
 }
+
